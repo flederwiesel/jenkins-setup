@@ -1,0 +1,53 @@
+def version = "0.9.8"
+def approved = "NO"
+
+pipeline
+{
+	agent any
+
+	stages
+	{
+		stage('Approval')
+		{
+			steps
+			{
+				// https://stackoverflow.com/questions/48799442/use-jenkins-rest-api-to-resume-a-paused-pipeline/50606237#50606237
+				// http://yourjenkins/job/${YOUR_PROJECT}/${BUILD_NUMBER}/input/${INPUT_ID}/submit
+				echo "http://localhost:8080/job/hmm/${BUILD_NUMBER}/input"
+
+				timeout(time: 1, unit: 'HOURS')
+				{
+					script
+					{
+						approved = input(
+							id: 'approval',
+							message: 'Approve release?',
+							parameters: [
+								choice(
+									name: """
+
+Software version ${version} was built successfully, however 71 tests failed.
+Do you want to approve the release?""",
+									choices: "NO\nYes",
+								description: '''
+If you click "Proceed" the build will proceed to the next step,
+if you click "Abort" the build will be aborted.'''
+								)
+							]
+						)
+					}
+				}
+			}
+		}
+
+		stage('Deploy')
+		{
+			when {
+				expression { approved == 'Yes' }
+			}
+			steps {
+				echo "Deploying build...."
+			}
+		}
+	}
+}
