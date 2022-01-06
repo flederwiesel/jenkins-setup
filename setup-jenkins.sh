@@ -436,6 +436,19 @@ locale                             Locale plugin                                
 
 jenkins-cli restart
 
+# After restart, Jenkis will issue the following error / status code / HTML:
+# 0: 503: Please wait while Jenkins is restarting
+# 56
+# 0: 503: Please wait while Jenkins is getting ready to work
+# 0: 403: Authentication required
+until [ "${result:0:1}" = "4" ]
+do
+	result=$(curl -s -w '%{stderr}%{http_code}' http://localhost:8080/ 2>/dev/null 3>&1 1>&2 2>&3)
+	echo $?:$result
+
+	[ "${result:0:1}" = "4" ] || sleep 1
+done
+
 exit
 
 #jenkins-cli list-credentials-as-xml system::system::jenkins
