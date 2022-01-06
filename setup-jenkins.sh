@@ -17,12 +17,6 @@ fi
 apt update
 apt upgrade --yes
 
-# Install virtualbox additions
-
-apt install build-essential linux-headers-$(uname -r)
-sh /media/flederwiesel/VBox_GAs_5.2.28/VBoxLinuxAdditions.run
-reboot
-
 # Install necessary binaries
 
 # The docker.io install callback creates the docker group
