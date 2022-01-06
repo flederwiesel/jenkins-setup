@@ -434,11 +434,9 @@ ssh                                SSH plugin                                   
 locale                             Locale plugin                                   1.4
 )
 
-jenkins-cli reload-configuration # ?
+jenkins-cli restart
 
 exit
-
-jenkins-cli restart
 
 #jenkins-cli list-credentials-as-xml system::system::jenkins
 #jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
