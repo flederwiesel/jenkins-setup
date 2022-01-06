@@ -91,13 +91,18 @@ cd /tmp
 
 passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
 
-echo "admin:$passwd" > passwd
+echo "admin:$passwd" > $HOME/passwd
 
-#java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd help
+jenkins-cli()
+{
+	java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @$HOME/passwd "$@"
+}
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd list-plugins
+#jenkins-cli help
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd install-plugin \
+jenkins-cli list-plugins
+
+jenkins-cli install-plugin \
 $(awk '/^[^#]/ { print $1 }' <<"EOF"
 ### Organization and Administration
 
@@ -429,15 +434,15 @@ ssh                                SSH plugin                                   
 locale                             Locale plugin                                   1.4
 )
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd reload-configuration # ?
+jenkins-cli reload-configuration # ?
 
 exit
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd restart
+jenkins-cli restart
 
-#java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd list-credentials-as-xml system::system::jenkins
-#java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd import-credentials-as-xml system::system::jenkins <<"EOF"
+#jenkins-cli list-credentials-as-xml system::system::jenkins
+#jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
+jenkins-cli import-credentials-as-xml system::system::jenkins <<"EOF"
 <list>
   <com.cloudbees.plugins.credentials.domains.DomainCredentials plugin="credentials@1055.v1346ba467ba1">
     <domain>
@@ -499,8 +504,8 @@ hWUiMRPB0C+e8dnqKMvc/12cVDxuyJjcuBvL4fotj7ZZFpDyohq/wmFravdx7ZtKDSFe3R
 </list>
 EOF
 
-#java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd get-node
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd create-node <<"EOF"
+#jenkins-cli get-node
+jenkins-cli create-node <<"EOF"
 <slave>
   <name>ubuntu-devel</name>
   <description></description>
@@ -531,14 +536,14 @@ java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd create-node <<
 </slave>
 EOF
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd online-node ubuntu-devel
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd wait-node-online ubuntu-devel
+jenkins-cli online-node ubuntu-devel
+jenkins-cli wait-node-online ubuntu-devel
 # Take built-in node offline
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd offline-node ''
+jenkins-cli offline-node ''
 
 # Set url
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd groovy = <<EOF
+jenkins-cli groovy = <<EOF
 import jenkins.model.JenkinsLocationConfiguration
 
 jlc = JenkinsLocationConfiguration.get()
@@ -548,7 +553,7 @@ EOF
 
 # Set admin address
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd groovy = <<"EOF"
+jenkins-cli groovy = <<"EOF"
 import jenkins.model.JenkinsLocationConfiguration
 
 jlc = JenkinsLocationConfiguration.get()
@@ -558,7 +563,7 @@ EOF
 
 # Complete setup
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd groovy = <<"EOF"
+jenkins-cli groovy = <<"EOF"
 #!groovy
 
 import jenkins.model.*
@@ -570,4 +575,4 @@ instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
 instance.save()
 EOF
 
-java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @passwd restart
+jenkins-cli restart
