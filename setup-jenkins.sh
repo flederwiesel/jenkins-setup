@@ -46,8 +46,11 @@ chown 1000:jenkins /var/lib/jenkins
 su jenkins-setup <<"EOF"
 docker pull jenkins/jenkins:lts
 #docker image ls
+EOF
 
-cat <<"__jenkins_service__" | tee /lib/systemd/system/jenkins.service
+deluser jenkins-setup
+
+cat <<"EOF" | tee /lib/systemd/system/jenkins.service
 [Unit]
 Description=Jenkins Server
 Documentation=https://jenkins.io/doc/
@@ -73,15 +76,12 @@ ExecStop=/usr/bin/docker stop jenkins
 
 [Install]
 WantedBy=multi-user.target
-__jenkins_service__
+EOF
 
 systemctl daemon-reload
 systemctl enable jenkins
 systemctl start jenkins
 systemctl status jenkins
-EOF
-
-deluser jenkins-setup
 
 # Initial Jenkins setup
 
