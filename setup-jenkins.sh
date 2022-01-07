@@ -201,7 +201,8 @@ for f in "$setupdir/nodes"/*.xml
 do
 	node=$(awk '/<name>/ { print gensub(/.*>([^<]+)<.*/, "\\1", "g") }' "$f")
 
-	jenkins-cli create-node < "$f"
+	jenkins-cli get-node "$node" &>/dev/null && op=update || op=create
+	jenkins-cli $op-node "$node" < "$f"
 	jenkins-cli connect-node "$node"
 	jenkins-cli wait-node-online "$node"
 done
