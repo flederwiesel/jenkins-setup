@@ -170,7 +170,7 @@ do
 	node=$(awk '/<name>/ { print gensub(/.*>([^<]+)<.*/, "\\1", "g") }' "$f")
 
 	jenkins-cli create-node < "$f"
-	jenkins-cli online-node "$node"
+	jenkins-cli connect-node "$node"
 	jenkins-cli wait-node-online "$node"
 done
 
