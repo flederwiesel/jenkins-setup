@@ -100,8 +100,8 @@ EOF
 
 systemctl daemon-reload
 systemctl enable jenkins
-systemctl start jenkins
-systemctl status jenkins
+systemctl start  jenkins
+systemctl status jenkins --no-pager
 
 # Initial Jenkins setup
 
