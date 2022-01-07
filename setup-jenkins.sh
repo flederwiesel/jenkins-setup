@@ -113,13 +113,13 @@ cd /tmp
 
 [ -e jenkins-cli.jar ] || wget http://localhost:8080/jnlpJars/jenkins-cli.jar
 
-passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
+auth=admin:$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
 
-echo "admin:$passwd" > $HOME/passwd
+echo "$auth" > $HOME/jenkins-auth
 
 jenkins-cli()
 {
-	java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @$HOME/passwd "$@"
+	java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @$HOME/jenkins-auth "$@"
 }
 
 #jenkins-cli help
@@ -130,17 +130,27 @@ jenkins-cli install-plugin $(awk '/^[^#]/ { print $1 }' "$setupdir/plugins")
 
 jenkins-cli restart
 
-# After restart, Jenkis will issue the following error / status code / HTML:
+# Shortly before restart, Jenkis will issue the following error / status code / HTML:
 # 0: 503: Please wait while Jenkins is restarting
+
+until [ "${result:0:1}" = "5" ]
+do
+	result=$(curl -sS -w '%{stderr}%{http_code}' --user "$auth" http://localhost:8080/ 2>/dev/null 3>&1 1>&2 2>&3)
+	echo $?:$result
+
+	[ "${result:0:1}" = "5" ] || sleep 1
+done
+
+# After restart, Jenkis will issue the following error / status code / HTML:
 # 56
 # 0: 503: Please wait while Jenkins is getting ready to work
 # 0: 403: Authentication required
-until [ "${result:0:1}" = "4" ]
+until [ "${result:0:1}" = "2" ]
 do
-	result=$(curl -s -w '%{stderr}%{http_code}' http://localhost:8080/ 2>/dev/null 3>&1 1>&2 2>&3)
+	result=$(curl -sS -w '%{stderr}%{http_code}' --user "$auth" http://localhost:8080/ 2>/dev/null 3>&1 1>&2 2>&3)
 	echo $?:$result
 
-	[ "${result:0:1}" = "4" ] || sleep 1
+	[ "${result:0:1}" = "2" ] || sleep 1
 done
 
 # Set url
