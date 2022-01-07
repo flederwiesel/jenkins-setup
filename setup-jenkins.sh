@@ -124,8 +124,7 @@ jenkins-cli()
 
 #jenkins-cli help
 
-jenkins-cli list-plugins
-
+#jenkins-cli list-plugins
 jenkins-cli install-plugin $(awk '/^[^#]/ { print $1 }' "$setupdir/plugins")
 
 jenkins-cli restart
