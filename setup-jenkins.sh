@@ -209,5 +209,3 @@ done
 
 # Take built-in node offline
 jenkins-cli offline-node ''
-
-jenkins-cli restart
