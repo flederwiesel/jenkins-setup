@@ -121,30 +121,6 @@ do
 	[ "${result:0:1}" = "4" ] || sleep 1
 done
 
-#jenkins-cli list-credentials-as-xml system::system::jenkins
-#jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
-
-for f in "$setupdir/credentials"/*.xml
-do
-	jenkins-cli import-credentials-as-xml system::system::jenkins < "$f"
-done
-
-#jenkins-cli get-node
-
-for f in "$setupdir/nodes"/*.xml
-do
-	node=$(awk '/<name>/ { print gensub(/.*>([^<]+)<.*/, "\\1", "g") }' "$f")
-
-	jenkins-cli create-node < "$f"
-	jenkins-cli online-node "$node"
-	jenkins-cli wait-node-online "$node"
-done
-
-# Take built-in node offline
-jenkins-cli offline-node ''
-
-exit
-
 # Set url
 
 jenkins-cli groovy = <<EOF
@@ -178,5 +154,27 @@ def instance = Jenkins.getInstance()
 instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
 instance.save()
 EOF
+
+#jenkins-cli list-credentials-as-xml system::system::jenkins
+#jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
+
+for f in "$setupdir/credentials"/*.xml
+do
+	jenkins-cli import-credentials-as-xml system::system::jenkins < "$f"
+done
+
+#jenkins-cli get-node
+
+for f in "$setupdir/nodes"/*.xml
+do
+	node=$(awk '/<name>/ { print gensub(/.*>([^<]+)<.*/, "\\1", "g") }' "$f")
+
+	jenkins-cli create-node < "$f"
+	jenkins-cli online-node "$node"
+	jenkins-cli wait-node-online "$node"
+done
+
+# Take built-in node offline
+jenkins-cli offline-node ''
 
 jenkins-cli restart
