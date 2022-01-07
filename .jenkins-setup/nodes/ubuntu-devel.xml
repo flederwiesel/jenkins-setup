@@ -1,0 +1,28 @@
+<slave>
+  <name>ubuntu-devel</name>
+  <description></description>
+  <remoteFS>/tmp</remoteFS>
+  <numExecutors>1</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Demand">
+    <inDemandDelay>0</inDemandDelay>
+    <idleDelay>59</idleDelay>
+  </retentionStrategy>
+  <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.33.0">
+    <host>ubuntu-devel</host>
+    <port>22</port>
+    <credentialsId>ssh-flederwiesel-ubuntu-devel</credentialsId>
+    <launchTimeoutSeconds>60</launchTimeoutSeconds>
+    <maxNumRetries>10</maxNumRetries>
+    <retryWaitTime>15</retryWaitTime>
+    <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.ManuallyProvidedKeyVerificationStrategy">
+      <key>
+        <algorithm>ssh-rsa</algorithm>
+        <key>AAAAB3NzaC1yc2EAAAADAQABAAABgQCl4TRig2cOT4mXVzNVwCb2b/A3kn9lsaVonx3yzl6Kg0X604qYoGS575vi/LwvZb91unZ++cdVXmV0UOB3OqTKaB2MWVHLtBdHlz3gvdVYtakl4CMvx+ej1iDNgh2w9Mpwchf4poh2pjCzWcy6mcjW7oIowxhAfaLPSkAdEs0d7bnvy3CGb5HVbkLJrtHLGdks+7i+y0mDekLgepem91ZGN1DsJFYi112wPfu4tPcy9tyZSuRQ/XJBre65ohDnVYm57YYBQYVnqW6t50bkxAEMzHylt4Z+kYpJx1Z4dBNTXwQR1EVEy0kCbDwQacYE290qFNs1tkYmwym4E4L+PcZrVRZ9dbLFqO1sjXhUqLYXfIGFthaivH06C6v/jryLHRQeqrYpyKMhh6cDRqHzsJY2z1YZc+ALyBYTYCCOSGXwB3NXJkJTpOGUDMDfylepUaghdPkG5qBUecKDwVyYfX3IUc+HYUI5XOgOChu4C9w9zXdYDoqVlMCIyecIF2B7nGc=</key>
+      </key>
+    </sshHostKeyVerificationStrategy>
+    <tcpNoDelay>true</tcpNoDelay>
+  </launcher>
+  <label></label>
+  <nodeProperties/>
+</slave>
