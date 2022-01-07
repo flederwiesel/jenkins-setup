@@ -208,3 +208,14 @@ done
 
 # Take built-in node offline
 jenkins-cli offline-node ''
+
+#jenkins-cli list-jobs
+#jenkins-cli get-job ''
+
+for f in "$setupdir/jobs"/*.xml
+do
+	job="${f##*/}"
+	job="${job%.xml}"
+
+	jenkins-cli create-job "$job" < "$f"
+done

@@ -1,0 +1,57 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description>yocto-docker-pipeline</description>
+  <displayName>yocto-docker-pipeline</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.34.1">
+      <projectUrl>https://github.com/flederwiesel/yocto-docker.git/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.27">
+      <gitLabConnection></gitLabConnection>
+      <jobCredentialId></jobCredentialId>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.32">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.6">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2648.va9433432b33c">
+    <script>node(&apos;ubuntu-devel&apos;) {
+    stage(&apos;fetch&apos;) {
+        git url: &apos;https://github.com/flederwiesel/yocto-docker.git&apos;, branch: &apos;master&apos;
+        // is equal to:
+        //   git([url: &apos;https://github.com/flederwiesel/yocto-docker.git&apos;, branch: &apos;master&apos;])
+        sh &apos;git submodule update --init --recursive&apos;
+    }
+    stage(&apos;build&apos;) {
+        sh &apos;&apos;&apos;
+            # TODO: Setup registry and `docker pull yocto/ubuntu-20.04`...
+            docker inspect yocto/ubuntu-20.04 &amp;&gt;/dev/null ||
+            ./docker build
+            ./docker run --interactive &lt;&lt;&quot;EOF&quot;
+                pwd
+                . poky/oe-init-build-env
+                bitbake core-image-minimal
+EOF
+        &apos;&apos;&apos;
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
