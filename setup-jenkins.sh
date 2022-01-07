@@ -12,6 +12,28 @@ if [ "$EUID" != "0" ]; then
 	exit 1
 fi
 
+awk --version 2>&1 | grep -q '^GNU Awk' ||
+{
+	sed $'s/\\\\033/\033/g' <<-"EOF" >&2
+		\033[1;37mThis script requires GNU awk.\033[m
+		\033[1;37mPlease use `sudo apt install gawk` to install.\033[m
+
+EOF
+
+	exit 1
+}
+
+curl --version &>/dev/null ||
+{
+	sed $'s/\\\\033/\033/g' <<-"EOF" >&2
+		\033[1;37mThis script requires curl.\033[m
+		\033[1;37mPlease use `sudo apt install curl` to install.\033[m
+
+EOF
+
+	exit 1
+}
+
 apt update
 apt upgrade --yes
 
