@@ -103,24 +103,45 @@ systemctl enable jenkins
 systemctl start  jenkins
 systemctl status jenkins --no-pager
 
-# Initial Jenkins setup
+state=undefined
 
-setupdir=$(realpath .jenkins-setup)
+rm -f $HOME/jenkins-auth
 
-source "$setupdir/global.config"
+while [[ ! -e $HOME/jenkins-auth ]]
+do
+	passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword) &&
+	{
+		auth="admin:$passwd"
+		echo "$auth" > $HOME/jenkins-auth
+	} ||
+	sleep 1
+done
 
-cd /tmp
+# After startup, Jenkis will issue the following error / status code / HTML:
+# 56
+# 0: 503: Please wait while Jenkins is getting ready to work
+# 0: 403: Authentication required
+until [ "${result:0:1}" = "2" ]
+do
+	result=$(curl -sS -w '%{stderr}%{http_code}' --user "$auth" http://localhost:8080/ 2>/dev/null 3>&1 1>&2 2>&3)
+	echo $?:$result
 
-[ -e jenkins-cli.jar ] || wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+	[ "${result:0:1}" = "2" ] || sleep 1
+done
 
-auth=admin:$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
-
-echo "$auth" > $HOME/jenkins-auth
+[ -e /usr/share/java/jenkins-cli.jar ] ||
+wget -P /usr/share/java http://localhost:8080/jnlpJars/jenkins-cli.jar
 
 jenkins-cli()
 {
-	java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @$HOME/jenkins-auth "$@"
+	java -jar /usr/share/java/jenkins-cli.jar \
+		-s http://localhost:8080/ -auth \
+		@$HOME/jenkins-auth "$@"
 }
+
+# Initial Jenkins setup
+
+setupdir=$(realpath .jenkins-setup)
 
 #jenkins-cli help
 
