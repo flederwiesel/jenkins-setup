@@ -61,6 +61,24 @@ chown 1000:jenkins /var/lib/jenkins
 
 ###
 
+setupdir=$(realpath .jenkins-setup)
+
+source "$setupdir/global.config"
+
+if [[ ${sshkeys[@]} ]]; then
+	for host in "${sshkeys[@]}"
+	do
+		IFS=: read login mac key identity <<< $host
+		hostkey=$(ssh-keyscan "${login##*@}" 2>/dev/null | awk "/$mac/"'{ print $3 }')
+		#ssh -o StrictHostKeyChecking=accept-new
+		if [[ $hostkey == $key ]]; then
+			ssh-copy-id -o StrictHostKeyChecking=accept-new -i "$identity" "$login"
+		fi
+	done
+fi
+
+###
+
 # Setup systemd
 
 su jenkins-setup <<"EOF"
@@ -140,8 +158,6 @@ jenkins-cli()
 }
 
 # Initial Jenkins setup
-
-setupdir=$(realpath .jenkins-setup)
 
 #jenkins-cli help
 
