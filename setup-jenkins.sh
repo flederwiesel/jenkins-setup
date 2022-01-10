@@ -243,9 +243,6 @@ do
 	jenkins-cli wait-node-online "$node"
 done
 
-# Take built-in node offline
-jenkins-cli offline-node ''
-
 #jenkins-cli list-jobs
 #jenkins-cli get-job ''
 
