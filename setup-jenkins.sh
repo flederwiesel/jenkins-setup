@@ -47,9 +47,6 @@ useradd --system -g jenkins -s /sbin/nologin jenkins
 usermod -aG docker jenkins
 usermod -aG docker $SUDO_USER
 
-useradd -g jenkins --no-create-home jenkins-setup
-usermod -aG docker jenkins-setup
-
 # exit/reconnect is required after usermod (self)...
 
 mkdir -p /var/lib/jenkins
@@ -61,16 +58,11 @@ chown 1000:jenkins /var/lib/jenkins
 
 ###
 
-# Setup systemd
-
-su jenkins-setup <<"EOF"
 docker pull jenkins/jenkins:lts
 #docker image ls
-EOF
 
-deluser jenkins-setup
-
-cat <<"EOF" | tee /lib/systemd/system/jenkins.service
+# Setup systemd
+cat <<"EOF" > /lib/systemd/system/jenkins.service
 [Unit]
 Description=Jenkins Server
 Documentation=https://jenkins.io/doc/
