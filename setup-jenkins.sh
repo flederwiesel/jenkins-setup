@@ -87,7 +87,7 @@ rm -f $HOME/jenkins-auth
 
 while [[ ! -e $HOME/jenkins-auth ]]
 do
-	passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword) &&
+	passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null) &&
 	{
 		auth="admin:$passwd"
 		echo "$auth" > $HOME/jenkins-auth
