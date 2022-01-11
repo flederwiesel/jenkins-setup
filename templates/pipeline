@@ -1,0 +1,20 @@
+node('ubuntu-devel') {
+    stage('fetch') {
+        git url: 'https://github.com/flederwiesel/yocto-docker.git', branch: 'master'
+        // is equal to:
+        //   git([url: 'https://github.com/flederwiesel/yocto-docker.git', branch: 'master'])
+        sh 'git submodule update --init --recursive'
+    }
+    stage('build') {
+        sh '''
+            # TODO: Setup registry and `docker pull yocto/ubuntu-20.04`...
+            docker inspect yocto/ubuntu-20.04 &>/dev/null ||
+            ./docker build
+            ./docker run --interactive <<"EOF"
+                pwd
+                . poky/oe-init-build-env
+                bitbake core-image-minimal
+EOF
+        '''
+    }
+}
