@@ -12,6 +12,7 @@ if [ "$EUID" != "0" ]; then
 	exit 1
 fi
 
+readonly HOMEDIR=$(eval echo ~$(printf %q "$SUDO_USER"))
 readonly scriptdir=$(dirname "$(realpath "$0")")
 
 deps=(curl gawk default-jre docker.io)
@@ -30,10 +31,10 @@ if [[ ${install[@]} ]]; then
 	apt install --yes "${install[@]}"
 fi
 
-getent group jenkins ||
+getent group jenkins &>/dev/null ||
 groupadd --system jenkins
 
-getent passwd jenkins ||
+getent passwd jenkins &>/dev/null ||
 useradd --system -g jenkins -s /sbin/nologin jenkins
 
 gid=$(getent group jenkins)
@@ -94,14 +95,14 @@ systemctl status jenkins --no-pager
 
 state=undefined
 
-rm -f $HOME/jenkins-auth
+rm -f "$HOMEDIR/jenkins-auth"
 
-while [[ ! -e $HOME/jenkins-auth ]]
+while [[ ! -e "$HOMEDIR/jenkins-auth" ]]
 do
 	passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null) &&
 	{
 		auth="admin:$passwd"
-		echo "$auth" > $HOME/jenkins-auth
+		echo "$auth" > "$HOMEDIR/jenkins-auth"
 	} ||
 	sleep 1
 done
@@ -125,26 +126,26 @@ jenkins-cli()
 {
 	java -jar /usr/share/java/jenkins-cli.jar \
 		-s http://localhost:8080/ -auth \
-		@$HOME/jenkins-auth "$@"
+		@$HOMEDIR/jenkins-auth "$@"
 }
 
 # Initial Jenkins setup
 
-mkdir -p "/home/$SUDO_USER/.jenkins-setup"
-chmod 700 "/home/$SUDO_USER/.jenkins-setup"
+mkdir -p "$HOMEDIR/.jenkins-setup"
+chmod 700 "$HOMEDIR/.jenkins-setup"
 
-[[ -f "/home/$SUDO_USER/.jenkins-setup/jenkins.config" ]] ||
-cp "${1:-$scriptdir/default/jenkins.config}" "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
+[[ -f "$HOMEDIR/.jenkins-setup/jenkins.config" ]] ||
+cp "${1:-$scriptdir/default/jenkins.config}" "$HOMEDIR/.jenkins-setup/jenkins.config"
 
-[[ -f "/home/$SUDO_USER/.jenkins-setup/plugins" ]] ||
-cp "$scriptdir/default/plugins" "/home/$SUDO_USER/.jenkins-setup"
+[[ -f "$HOMEDIR/.jenkins-setup/plugins" ]] ||
+cp "$scriptdir/default/plugins" "$HOMEDIR/.jenkins-setup"
 
-source "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
+source "$HOMEDIR/.jenkins-setup/jenkins.config"
 
 #jenkins-cli help
 
 #jenkins-cli list-plugins
-jenkins-cli install-plugin $(awk '/^[^#]/ { print $1 }' "/home/$SUDO_USER/.jenkins-setup/plugins")
+jenkins-cli install-plugin $(awk '/^[^#]/ { print $1 }' "$HOMEDIR/.jenkins-setup/plugins")
 
 jenkins-cli restart
 
@@ -199,8 +200,8 @@ EOF
 #jenkins-cli list-credentials-as-xml system::system::jenkins
 #jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
 
-rm -rf "/home/$SUDO_USER/.jenkins-setup/credentials"
-mkdir  "/home/$SUDO_USER/.jenkins-setup/credentials"
+rm -rf "$HOMEDIR/.jenkins-setup/credentials"
+mkdir  "$HOMEDIR/.jenkins-setup/credentials"
 
 for cred in "${credentials[@]}"
 do
@@ -211,14 +212,14 @@ do
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
 		"$scriptdir/templates/credentials.xml" |
-	tee "/home/$SUDO_USER/.jenkins-setup/credentials/$id.xml" |
+	tee "$HOMEDIR/.jenkins-setup/credentials/$id.xml" |
 	jenkins-cli import-credentials-as-xml system::system::jenkins
 done
 
 #jenkins-cli get-node
 
-rm -rf "/home/$SUDO_USER/.jenkins-setup/nodes"
-mkdir  "/home/$SUDO_USER/.jenkins-setup/nodes"
+rm -rf "$HOMEDIR/.jenkins-setup/nodes"
+mkdir  "$HOMEDIR/.jenkins-setup/nodes"
 
 for node in "${nodes[@]}"
 do
@@ -249,7 +250,7 @@ do
 		s/<algorithm>[^<]*</<algorithm>$mac</g
 		s,<key>[^<]*<,<key>$key<,g" \
 		"$scriptdir/templates/node.xml" |
-	tee "/home/$SUDO_USER/.jenkins-setup/nodes/$hostname.xml" |
+	tee "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml" |
 
 	jenkins-cli $op-node "$hostname"
 done
@@ -257,8 +258,8 @@ done
 #jenkins-cli list-jobs
 #jenkins-cli get-job ''
 
-rm -rf "/home/$SUDO_USER/.jenkins-setup/jobs"
-mkdir  "/home/$SUDO_USER/.jenkins-setup/jobs"
+rm -rf "$HOMEDIR/.jenkins-setup/jobs"
+mkdir  "$HOMEDIR/.jenkins-setup/jobs"
 
 for job in "${jobs[@]}"
 do
@@ -282,7 +283,7 @@ do
 			)/g " \
 		"$template" |
 	sed 's/\\n/\n/g' |
-	tee "/home/$SUDO_USER/.jenkins-setup/jobs/$name.xml" |
+	tee "$HOMEDIR/.jenkins-setup/jobs/$name.xml" |
 	jenkins-cli $op-job "$name"
 done
 
