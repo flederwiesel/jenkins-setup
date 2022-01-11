@@ -30,9 +30,18 @@ if [[ ${install[@]} ]]; then
 	apt install --yes "${install[@]}"
 fi
 
+getent group jenkins ||
 groupadd --system jenkins
+
+getent passwd jenkins ||
 useradd --system -g jenkins -s /sbin/nologin jenkins
+
+gid=$(getent group jenkins)
+
+id jenkins | grep -q "groups=.*\<$gid\>" ||
 usermod -aG docker jenkins
+
+id jenkins | grep -q "groups=.*\<$gid\>" ||
 usermod -aG docker $SUDO_USER
 
 # exit/reconnect is required after usermod (self)...
