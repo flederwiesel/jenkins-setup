@@ -120,6 +120,7 @@ jenkins-cli()
 # Initial Jenkins setup
 
 mkdir -p "/home/$SUDO_USER/.jenkins-setup"
+chmod 700 "/home/$SUDO_USER/.jenkins-setup"
 
 [[ -f "/home/$SUDO_USER/.jenkins-setup/jenkins.config" ]] ||
 cp "${1:-default/jenkins.config}" "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
