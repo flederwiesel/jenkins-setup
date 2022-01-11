@@ -12,6 +12,8 @@ if [ "$EUID" != "0" ]; then
 	exit 1
 fi
 
+readonly scriptdir=$(dirname "$(realpath "$0")")
+
 deps=(curl gawk default-jre docker.io)
 
 for d in "${deps[@]}"
@@ -123,10 +125,10 @@ mkdir -p "/home/$SUDO_USER/.jenkins-setup"
 chmod 700 "/home/$SUDO_USER/.jenkins-setup"
 
 [[ -f "/home/$SUDO_USER/.jenkins-setup/jenkins.config" ]] ||
-cp "${1:-default/jenkins.config}" "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
+cp "${1:-$scriptdir/default/jenkins.config}" "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
 
 [[ -f "/home/$SUDO_USER/.jenkins-setup/plugins" ]] ||
-cp "default/plugins" "/home/$SUDO_USER/.jenkins-setup"
+cp "$scriptdir/default/plugins" "/home/$SUDO_USER/.jenkins-setup"
 
 source "/home/$SUDO_USER/.jenkins-setup/jenkins.config"
 
@@ -199,7 +201,7 @@ do
 		s/<username>[^<]*</<username>$username</g
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
-		"templates/credentials.xml" |
+		"$scriptdir/templates/credentials.xml" |
 	tee "/home/$SUDO_USER/.jenkins-setup/credentials/$id.xml" |
 	jenkins-cli import-credentials-as-xml system::system::jenkins
 done
@@ -237,7 +239,7 @@ do
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		s/<algorithm>[^<]*</<algorithm>$mac</g
 		s,<key>[^<]*<,<key>$key<,g" \
-		"templates/node.xml" |
+		"$scriptdir/templates/node.xml" |
 	tee "/home/$SUDO_USER/.jenkins-setup/nodes/$hostname.xml" |
 
 	jenkins-cli $op-node "$hostname"
