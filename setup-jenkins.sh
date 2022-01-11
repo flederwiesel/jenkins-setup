@@ -232,7 +232,7 @@ mkdir  "/home/$SUDO_USER/.jenkins-setup/nodes"
 
 for node in "${nodes[@]}"
 do
-	IFS=: read hostname mac key cred <<< "$node"
+	IFS=: read hostname mac key cred rootdir <<< "$node"
 
 	for credential in "${credentials[@]}"
 	do
@@ -253,6 +253,7 @@ do
 
 	sed "s/<name>[^>]*</<name>$hostname</g
 		s/<host>[^>]*</<host>$hostname</g
+		s:<remoteFS>[^>]*<:<remoteFS>$rootdir<:g
 		s/<credentialsId>[^<]*</<credentialsId>$cred</g
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		s/<algorithm>[^<]*</<algorithm>$mac</g
