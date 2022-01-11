@@ -6,7 +6,8 @@ node('ubuntu-devel') {
 		sh 'git submodule update --init --recursive'
 	}
 	stage('build') {
-		sh '''
+		sh '''#!/bin/bash
+
 			# TODO: Setup registry and `docker pull yocto/ubuntu-20.04`...
 			docker inspect yocto/ubuntu-20.04 &>/dev/null ||
 			./docker build
