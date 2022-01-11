@@ -12,35 +12,21 @@ if [ "$EUID" != "0" ]; then
 	exit 1
 fi
 
-awk --version 2>&1 | grep -q '^GNU Awk' ||
-{
-	sed $'s/\\\\033/\033/g' <<-"EOF" >&2
-		\033[1;37mThis script requires GNU awk.\033[m
-		\033[1;37mPlease use `sudo apt install gawk` to install.\033[m
+deps=(curl gawk default-jre docker.io)
 
-EOF
+for d in "${deps[@]}"
+do
+	dpkg --list "$d" | grep -q '^ii' || install+=("$d")
+done
 
-	exit 1
-}
+if [[ ${install[@]} ]]; then
+	# Install necessary binaries
+	# The docker.io install callback creates the docker group
 
-curl --version &>/dev/null ||
-{
-	sed $'s/\\\\033/\033/g' <<-"EOF" >&2
-		\033[1;37mThis script requires curl.\033[m
-		\033[1;37mPlease use `sudo apt install curl` to install.\033[m
-
-EOF
-
-	exit 1
-}
-
-apt update
-apt upgrade --yes
-
-# Install necessary binaries
-
-# The docker.io install callback creates the docker group
-apt install --yes default-jre docker.io
+	apt update
+	apt upgrade --yes
+	apt install --yes "${install[@]}"
+fi
 
 groupadd --system jenkins
 useradd --system -g jenkins -s /sbin/nologin jenkins
