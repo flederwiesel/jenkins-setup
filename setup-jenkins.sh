@@ -134,8 +134,17 @@ jenkins-cli()
 mkdir -p "$HOMEDIR/.jenkins-setup"
 chmod 700 "$HOMEDIR/.jenkins-setup"
 
-[[ -f "$HOMEDIR/.jenkins-setup/jenkins.config" ]] ||
-cp "${1:-$scriptdir/default/jenkins.config}" "$HOMEDIR/.jenkins-setup/jenkins.config"
+if [[ $1 ]]; then
+	if [[ -f "$1" ]]; then
+		cp "$1" "$HOMEDIR/.jenkins-setup/jenkins.config"
+	else
+		echo "Could not find file $1." >&2
+		exit 2
+	fi
+else
+	[[ -f "$HOMEDIR/.jenkins-setup/jenkins.config" ]] ||
+	cp "$scriptdir/default/jenkins.config" "$HOMEDIR/.jenkins-setup/jenkins.config"
+fi
 
 [[ -f "$HOMEDIR/.jenkins-setup/plugins" ]] ||
 cp "$scriptdir/default/plugins" "$HOMEDIR/.jenkins-setup"
