@@ -100,6 +100,21 @@ systemctl status jenkins --no-pager
 
 state=undefined
 
+# Initial Jenkins setup
+
+mkdir -p "$HOMEDIR/.jenkins-setup"
+chgrp jenkins "$HOMEDIR/.jenkins-setup"
+chmod og=rwx,g+s,o= "$HOMEDIR/.jenkins-setup"
+
+# Create files with rwx permissions for owner and group,
+# so all users in the jenkins group have access
+
+# BE CAREFUL NOT TO CREATE FILES OUTSIDE "$HOMEDIR/.jenkins-setup"
+# as they all will have permissions we set here, which may not be
+# what you want...
+
+umask 007
+
 rm -f "$HOMEDIR/jenkins-auth"
 
 while [[ ! -e "$HOMEDIR/jenkins-auth" ]]
@@ -108,6 +123,7 @@ do
 	{
 		auth="admin:$passwd"
 		echo "$auth" > "$HOMEDIR/jenkins-auth"
+		chgrp jenkins "$HOMEDIR/jenkins-auth"
 	} ||
 	sleep 1
 done
@@ -133,11 +149,6 @@ jenkins-cli()
 		-s http://localhost:8080/ -auth \
 		@$HOMEDIR/jenkins-auth "$@"
 }
-
-# Initial Jenkins setup
-
-mkdir -p "$HOMEDIR/.jenkins-setup"
-chmod 700 "$HOMEDIR/.jenkins-setup"
 
 if [[ $1 ]]; then
 	if [[ -f "$1" ]]; then
