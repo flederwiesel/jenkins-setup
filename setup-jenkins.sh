@@ -37,6 +37,11 @@ groupadd --system jenkins
 getent passwd jenkins &>/dev/null ||
 useradd --system -g jenkins -s /sbin/nologin jenkins
 
+gid=$(getent group jenkins)
+
+id $SUDO_USER | grep -q "groups=.*\<$gid\>" ||
+usermod -aG jenkins $SUDO_USER
+
 gid=$(getent group docker)
 
 id jenkins | grep -q "groups=.*\<$gid\>" ||
