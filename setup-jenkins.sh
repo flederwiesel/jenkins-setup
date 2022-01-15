@@ -209,26 +209,26 @@ EOF
 #jenkins-cli list-credentials-as-xml system::system::jenkins
 #jenkins-cli get-credentials-as-xml system::system::jenkins '(global)' ssh-flederwiesel-ubuntu-devel
 
-rm -rf "$HOMEDIR/.jenkins-setup/credentials"
-mkdir  "$HOMEDIR/.jenkins-setup/credentials"
+mkdir -p "$HOMEDIR/.jenkins-setup/credentials"
 
 for cred in "${credentials[@]}"
 do
 	IFS=: read id username passphrase identity <<< "$cred"
 
+	[[ -f "$HOMEDIR/.jenkins-setup/credentials/$id.xml" ]] ||
 	sed "s/<id>[^>]*</<id>$id</g
 		s/<username>[^<]*</<username>$username</g
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
-		"$scriptdir/templates/credentials.xml" |
-	tee "$HOMEDIR/.jenkins-setup/credentials/$id.xml" |
-	jenkins-cli import-credentials-as-xml system::system::jenkins
+		"$scriptdir/templates/credentials.xml" \
+		> "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
+	jenkins-cli import-credentials-as-xml system::system::jenkins \
+		< "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
 done
 
 #jenkins-cli get-node
 
-rm -rf "$HOMEDIR/.jenkins-setup/nodes"
-mkdir  "$HOMEDIR/.jenkins-setup/nodes"
+mkdir -p "$HOMEDIR/.jenkins-setup/nodes"
 
 for node in "${nodes[@]}"
 do
@@ -251,6 +251,7 @@ do
 
 	jenkins-cli get-node "$hostname" &>/dev/null && op=update || op=create
 
+	[[ -f "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml" ]] ||
 	sed "s/<name>[^>]*</<name>$hostname</g
 		s/<host>[^>]*</<host>$hostname</g
 		s:<remoteFS>[^>]*<:<remoteFS>$rootdir<:g
@@ -258,17 +259,17 @@ do
 		s/<passphrase>[^<]*</<passphrase>$passphrase</g
 		s/<algorithm>[^<]*</<algorithm>$mac</g
 		s,<key>[^<]*<,<key>$key<,g" \
-		"$scriptdir/templates/node.xml" |
-	tee "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml" |
+		"$scriptdir/templates/node.xml" \
+		> "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
 
-	jenkins-cli $op-node "$hostname"
+	jenkins-cli $op-node "$hostname" \
+		< "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
 done
 
 #jenkins-cli list-jobs
 #jenkins-cli get-job ''
 
-rm -rf "$HOMEDIR/.jenkins-setup/jobs"
-mkdir  "$HOMEDIR/.jenkins-setup/jobs"
+mkdir -p "$HOMEDIR/.jenkins-setup/jobs"
 
 for job in "${jobs[@]}"
 do
@@ -276,6 +277,7 @@ do
 
 	jenkins-cli get-job "$name" &>/dev/null && op=update || op=create
 
+	[[ -f "$HOMEDIR/.jenkins-setup/jobs/$name.xml" ]] ||
 	sed "s/<description>[^>]*</<description>$name</g
 		s/<displayName>[^>]*</<displayName>$name</g
 		s|<projectUrl>[^<]*<|<projectUrl>https://$url<|g
@@ -291,9 +293,11 @@ do
 			'
 			)/g " \
 		"$template" |
-	sed 's/\\n/\n/g' |
-	tee "$HOMEDIR/.jenkins-setup/jobs/$name.xml" |
-	jenkins-cli $op-job "$name"
+	sed 's/\\n/\n/g' \
+		> "$HOMEDIR/.jenkins-setup/jobs/$name.xml"
+
+	jenkins-cli $op-job "$name" \
+		< "$HOMEDIR/.jenkins-setup/jobs/$name.xml"
 done
 
 for copy in "${ssh_id[@]}"
