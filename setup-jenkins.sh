@@ -232,12 +232,16 @@ do
 	IFS=: read id username passphrase identity <<< "$cred"
 
 	[[ -f "$HOMEDIR/.jenkins-setup/credentials/$id.xml" ]] ||
-	sed "s/<id>[^>]*</<id>$id</g
-		s/<username>[^<]*</<username>$username</g
-		s/<passphrase>[^<]*</<passphrase>$passphrase</g
-		/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
-		"$scriptdir/templates/credentials.xml" \
-		> "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
+	{
+		passphrase=$(echo "$passphrase" | sed 's/\]\]>/]]]]><![CDATA[>/g; s/^.*$/<![CDATA[&]]>/g; s:[/&]:\\&:g')
+
+		sed "s/<id>[^>]*</<id>$id</g
+			s/<username>[^<]*</<username>$username</g
+			s/<passphrase>[^<]*</<passphrase>$passphrase</g
+			/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
+			"$scriptdir/templates/credentials.xml" \
+			> "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
+	}
 	jenkins-cli import-credentials-as-xml system::system::jenkins \
 		< "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
 done
@@ -252,7 +256,7 @@ do
 
 	for credential in "${credentials[@]}"
 	do
-		IFS=: read id username unused identity <<< "$credential"
+		IFS=: read id username passphrase keyfile <<< "$credential"
 
 		if [[ $cred == $id ]]; then
 			hostkey=$(ssh-keyscan "${hostname}" 2>/dev/null | awk "/$mac/"'{ print $3 }')
@@ -268,15 +272,19 @@ do
 	jenkins-cli get-node "$hostname" &>/dev/null && op=update || op=create
 
 	[[ -f "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml" ]] ||
-	sed "s/<name>[^>]*</<name>$hostname</g
-		s/<host>[^>]*</<host>$hostname</g
-		s:<remoteFS>[^>]*<:<remoteFS>$rootdir<:g
-		s/<credentialsId>[^<]*</<credentialsId>$cred</g
-		s/<passphrase>[^<]*</<passphrase>$passphrase</g
-		s/<algorithm>[^<]*</<algorithm>$mac</g
-		s,<key>[^<]*<,<key>$key<,g" \
-		"$scriptdir/templates/node.xml" \
-		> "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
+	{
+		passphrase=$(echo "$passphrase" | sed 's/\]\]>/]]]]><![CDATA[>/g; s/^.*$/<![CDATA[&]]>/g; s:[/&]:\\&:g')
+
+		sed "s/<name>[^>]*</<name>$hostname</g
+			s/<host>[^>]*</<host>$hostname</g
+			s:<remoteFS>[^>]*<:<remoteFS>$rootdir<:g
+			s/<credentialsId>[^<]*</<credentialsId>$cred</g
+			s/<passphrase>[^<]*</<passphrase>$passphrase</g
+			s/<algorithm>[^<]*</<algorithm>$mac</g
+			s,<key>[^<]*<,<key>$key<,g" \
+			"$scriptdir/templates/node.xml" \
+			> "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
+	}
 
 	jenkins-cli $op-node "$hostname" \
 		< "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
