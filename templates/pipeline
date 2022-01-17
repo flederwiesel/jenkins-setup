@@ -1,4 +1,4 @@
-node('ubuntu-devel') {
+node('%{node}') {
 	stage('fetch') {
 		git url: 'https://github.com/flederwiesel/yocto-docker.git', branch: 'master'
 		// is equal to:

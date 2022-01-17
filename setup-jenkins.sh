@@ -289,7 +289,7 @@ mkdir -p "$HOMEDIR/.jenkins-setup/jobs"
 
 for job in "${jobs[@]}"
 do
-	IFS=: read name url template script <<< "$job"
+	IFS=: read name url template script node <<< "$job"
 
 	jenkins-cli get-job "$name" &>/dev/null && op=update || op=create
 
@@ -300,6 +300,7 @@ do
 		/<script>$/ s/.*/<script>$(
 			sed ':n N; s/\n/\\\\n/g; tn' "$script" |
 			sed '
+				s/%{node}/'$node'/g
 				s,\/,\\\/,g
 				s/&/\\\&amp;/g;
 				s/</\\\&lt;/g;
