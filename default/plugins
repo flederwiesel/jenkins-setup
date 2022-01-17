@@ -17,13 +17,13 @@ cloudbees-folder                   Folders Plugin                               
 # This plugin allows configuration of Jenkins based on human-readable
 # declarative configuration files.
 # https://plugins.jenkins.io/configuration-as-code
-configuration-as-code              Configuration as Code Plugin                    1.55
+configuration-as-code              Configuration as Code Plugin                    1.55.1
 
 # OWASP Markup Formatter
 # Uses the OWASP Java HTML Sanitizer to allow safe-seeming HTML markup to be
 # entered in project descriptions and the like.
 # https://plugins.jenkins.io/antisamy-markup-formatter
-antisamy-markup-formatter          OWASP Markup Formatter Plugin                   2.5
+antisamy-markup-formatter          OWASP Markup Formatter Plugin                   2.7
 
 ### Build Features
 
@@ -51,7 +51,7 @@ config-file-provider               Config File Provider Plugin                  
 # Allows credentials to be bound to environment variables for use from
 # miscellaneous build steps.
 # https://plugins.jenkins.io/credentials-binding
-credentials-binding                Credentials Binding Plugin                      1.27
+credentials-binding                Credentials Binding Plugin                      1.27.1
 
 # Embeddable Build Status
 # This plugin adds the embeddable build status badge to Jenkins so that you can
@@ -62,29 +62,29 @@ embeddable-build-status            Embeddable Build Status Plugin               
 # Rebuilder
 # This plugin is for rebuilding a job using the same parameters.
 # https://plugins.jenkins.io/rebuild
-rebuild                            Rebuilder                                       1.32
+rebuild                            Rebuilder                                       1.33
 
 # SSH Agent
 # This plugin allows you to provide SSH credentials to builds via a ssh-agent in
 # Jenkins.
 # https://plugins.jenkins.io/ssh-agent
-ssh-agent                          SSH Agent Plugin                                1.23
+ssh-agent                          SSH Agent Plugin                                1.24.1
 
 # Throttle Concurrent Builds
 # This plugin allows for throttling the number of concurrent builds of a project
 # running per node or globally.
 # https://plugins.jenkins.io/throttle-concurrents
-throttle-concurrents               Throttle Concurrent Builds Plug-in              2.5
+throttle-concurrents               Throttle Concurrent Builds Plug-in              2.6
 
 # Timestamper
 # Adds timestamps to the Console Output
 # https://plugins.jenkins.io/timestamper
-timestamper                        Timestamper                                     1.15
+timestamper                        Timestamper                                     1.16
 
 # Workspace Cleanup
 # This plugin deletes the project workspace when invoked.
 # https://plugins.jenkins.io/ws-cleanup
-ws-cleanup                         Workspace Cleanup Plugin                        0.39
+ws-cleanup                         Workspace Cleanup Plugin                        0.40
 
 ### Build Tools
 
@@ -95,7 +95,7 @@ ant                                Ant Plugin                                   
 # Gradle
 # This plugin allows Jenkins to invoke Gradle build scripts directly.
 # https://plugins.jenkins.io/gradle
-gradle                             Gradle Plugin                                   1.37.1
+gradle                             Gradle Plugin                                   1.38
 
 # MSBuild
 # This plugin makes it possible to build a Visual Studio project (.proj) and
@@ -106,7 +106,7 @@ msbuild                            MSBuild Plugin                               
 # NodeJS
 # NodeJS Plugin executes NodeJS script as a build step.
 # https://plugins.jenkins.io/nodejs
-nodejs                             NodeJS Plugin                                   1.4.3
+nodejs                             NodeJS Plugin                                   1.5.1
 
 ### Build Analysis and Reporting
 
@@ -132,7 +132,7 @@ junit                              JUnit Plugin                                 
 # tools (spotbugs, pmd, checkstyle, eslint, phpstan, ...), see the list of
 # supported report formats.
 # https://plugins.jenkins.io/warnings-ng
-warnings-ng                        Warnings Next Generation Plugin                 9.10.2
+warnings-ng                        Warnings Next Generation Plugin                 9.10.3
 
 # xUnit
 # This plugin makes it possible to record xUnit test reports.
@@ -151,7 +151,7 @@ workflow-aggregator                Pipeline                                     
 # Branch Source Multibranch projects and organization folders from GitHub.
 # Maintained by CloudBees, Inc.
 # https://plugins.jenkins.io/github-branch-source
-github-branch-source               GitHub Branch Source Plugin                     2.11.3
+github-branch-source               GitHub Branch Source Plugin                     2.11.4
 
 # Pipeline: GitHub Groovy Libraries
 # Allows Pipeline Grrovy libraries to be loaded on the fly from GitHub.
@@ -203,7 +203,7 @@ cvs                                CVS Plug-in                                  
 # Git
 # This plugin integrates Git with Jenkins.
 # https://plugins.jenkins.io/git
-git                                Git plugin                                      4.10.1
+git                                Git plugin                                      4.10.2
 
 # Git Parameter
 # Adds ability to choose branches, tags or revisions from git repositories
@@ -220,7 +220,7 @@ github                             GitHub plugin                                
 # This plugin allows GitLab to trigger Jenkins builds and display their results
 # in the GitLab UI.
 # https://plugins.jenkins.io/gitlab-plugin
-gitlab-plugin                      GitLab Plugin                                   1.5.25
+gitlab-plugin                      GitLab Plugin                                   1.5.27
 
 # P4
 # Perforce Client plugin for the Jenkins SCM provider. The plugin includes
@@ -244,7 +244,7 @@ subversion                         Subversion Plug-in                           
 # Matrix Project
 # Multi-configuration (matrix) project type.
 # https://plugins.jenkins.io/matrix-project
-matrix-project                     Matrix Project Plugin                           1.19
+matrix-project                     Matrix Project Plugin                           1.20
 
 # SSH Build Agents
 # Allows to launch agents over SSH, using a Java implementation of the SSH protocol.
@@ -283,7 +283,7 @@ role-strategy                      Role-based Authorization Strategy            
 # Active Directory
 # This plugin enables authentication through Active Directory.
 # https://plugins.jenkins.io/active-directory
-active-directory                   Active Directory plugin                         2.25
+active-directory                   Active Directory plugin                         2.25.1
 
 # Authorize Project
 # Configure projects to run with specified authorization.
@@ -303,17 +303,20 @@ email-ext                          Email Extension Plugin                       
 # This plugin allows administrators to create global templates for the Extended
 # Email Publisher.
 # https://plugins.jenkins.io/emailext-template
-emailext-template                  Email Extension Template Plugin                 1.2
+emailext-template                  Email Extension Template Plugin                 1.4
 
 # Mailer
 # This plugin allows you to configure email notifications for build results
 # https://plugins.jenkins.io/mailer
-mailer                             Mailer Plugin                                   1.34
+mailer                             Mailer Plugin                                   408.vd726a_1130320
 
 # Publish Over SSH
 # Send build artifacts over SSH
 # https://plugins.jenkins.io/publish-over-ssh
-publish-over-ssh                   Publish Over SSH                                1.22
+# SUSPENDED due to various vulnerabilities announced on 2022-01-12:
+#   https://www.jenkins.io/security/plugins/#suspensions
+#   https://www.jenkins.io/security/advisory/2022-01-12/
+#publish-over-ssh                   Publish Over SSH                                1.22
 
 # SSH
 # This plugin executes shell commands remotely using SSH protocol.
