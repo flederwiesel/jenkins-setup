@@ -15,7 +15,7 @@ fi
 readonly HOMEDIR=$(eval echo ~$(printf %q "$SUDO_USER"))
 readonly scriptdir=$(dirname "$(realpath "$0")")
 
-deps=(curl gawk default-jre docker.io)
+deps=(curl gawk default-jre docker.io xmlstarlet)
 
 for d in "${deps[@]}"
 do
@@ -231,17 +231,18 @@ for cred in "${credentials[@]}"
 do
 	IFS=: read id username passphrase identity <<< "$cred"
 
-	[[ -f "$HOMEDIR/.jenkins-setup/credentials/$id.xml" ]] ||
-	{
-		passphrase=$(echo "$passphrase" | sed 's/\]\]>/]]]]><![CDATA[>/g; s/^.*$/<![CDATA[&]]>/g; s:[/&]:\\&:g')
+	xmldomain=com.cloudbees.plugins.credentials.domains.DomainCredentials
+	xmlpkey=com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
 
-		sed "s/<id>[^>]*</<id>$id</g
-			s/<username>[^<]*</<username>$username</g
-			s/<passphrase>[^<]*</<passphrase>$passphrase</g
-			/<privateKey>/ a $(sed ":n N; s/\\n/\\\\n/g; tn" "$identity")" \
-			"$scriptdir/templates/credentials.xml" \
-			> "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
-	}
+	[[ -f "$HOMEDIR/.jenkins-setup/credentials/$id.xml" ]] ||
+	xmlstarlet ed \
+		-u "/list/$xmldomain/credentials/$xmlpkey/id" -v "$id" \
+		-u "/list/$xmldomain/credentials/$xmlpkey/username" -v "$username" \
+		-u "/list/$xmldomain/credentials/$xmlpkey/passphrase" -v "$passphrase" \
+		-u "/list/$xmldomain/credentials/$xmlpkey/privateKeySource/privateKey" -v "$(cat $identity)" \
+		"$scriptdir/templates/credentials.xml" \
+		> "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
+
 	jenkins-cli import-credentials-as-xml system::system::jenkins \
 		< "$HOMEDIR/.jenkins-setup/credentials/$id.xml"
 done
@@ -272,19 +273,15 @@ do
 	jenkins-cli get-node "$hostname" &>/dev/null && op=update || op=create
 
 	[[ -f "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml" ]] ||
-	{
-		passphrase=$(echo "$passphrase" | sed 's/\]\]>/]]]]><![CDATA[>/g; s/^.*$/<![CDATA[&]]>/g; s:[/&]:\\&:g')
-
-		sed "s/<name>[^>]*</<name>$hostname</g
-			s/<host>[^>]*</<host>$hostname</g
-			s:<remoteFS>[^>]*<:<remoteFS>$rootdir<:g
-			s/<credentialsId>[^<]*</<credentialsId>$cred</g
-			s/<passphrase>[^<]*</<passphrase>$passphrase</g
-			s/<algorithm>[^<]*</<algorithm>$mac</g
-			s,<key>[^<]*<,<key>$key<,g" \
-			"$scriptdir/templates/node.xml" \
-			> "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
-	}
+	xmlstarlet ed \
+		-u "/slave/name" -v "$hostname" \
+		-u "/slave/remoteFS" -v "$rootdir" \
+		-u "/slave/launcher/host" -v "$hostname" \
+		-u "/slave/launcher/credentialsId" -v "$cred" \
+		-u "/slave/launcher/sshHostKeyVerificationStrategy/key/algorithm" -v "$mac" \
+		-u "/slave/launcher/sshHostKeyVerificationStrategy/key/key" -v "$key" \
+		"$scriptdir/templates/node.xml" \
+		> "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
 
 	jenkins-cli $op-node "$hostname" \
 		< "$HOMEDIR/.jenkins-setup/nodes/$hostname.xml"
@@ -302,23 +299,12 @@ do
 	jenkins-cli get-job "$name" &>/dev/null && op=update || op=create
 
 	[[ -f "$HOMEDIR/.jenkins-setup/jobs/$name.xml" ]] ||
-	sed "s/<description>[^>]*</<description>$name</g
-		s/<displayName>[^>]*</<displayName>$name</g
-		s|<projectUrl>[^<]*<|<projectUrl>https://$url<|g
-		/<script>$/ s/.*/<script>$(
-			sed ':n N; s/\n/\\\\n/g; tn' "$script" |
-			sed '
-				s/%{node}/'$node'/g
-				s,\/,\\\/,g
-				s/&/\\\&amp;/g;
-				s/</\\\&lt;/g;
-				s/>/\\\&gt;/g;
-				s/\x22/\\\&quot;/g;
-				s/\x27/\\\&apos;/g;
-			'
-			)/g " \
-		"$template" |
-	sed 's/\\n/\n/g' \
+	xmlstarlet ed \
+		-u "/flow-definition/definition/script" -v "$(sed "s/%{node}/$node/g" "$script")" \
+		-u "/flow-definition/displayName" -v "$name" \
+		-u "/flow-definition/description" -v "$name" \
+		-u "/flow-definition/projectUrl" -v "https://$url" \
+		"$template" \
 		> "$HOMEDIR/.jenkins-setup/jobs/$name.xml"
 
 	jenkins-cli $op-job "$name" \
