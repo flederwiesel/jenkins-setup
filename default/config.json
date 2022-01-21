@@ -1,24 +1,50 @@
 {
 	"url": "http://ubuntu-devel:8080/",
 	"admin": "\"Jenkins Admin\" <admin@ubuntu-devel>",
-	"credentials": [{
-		"id": "ssh-flederwiesel",
-		"username": "flederwiesel",
-		"password": null,
-		"keyfile": "/home/flederwiesel/.ssh/flederwiesel"
-	}],
-	"nodes": [{
-		"hostname": "ubuntu-devel",
-		"host-mac": "ssh-ed25519",
-		"host-key": "AAAAC3NzaC1lZDI1NTE5AAAAIFkhw+Wq5tOJhQNE6dqwK+8/N6AHjhd5e8dZm3FxLBQ4",
-		"credentials": "ssh-flederwiesel",
-		"root": "/home/flederwiesel"
-	}],
-	"jobs": [{
-		"name": "yocto-docker-pipeline",
-		"project-url": "https://github.com/flederwiesel/yocto-docker.git/",
-		"xml-template": "$scriptdir/templates/pipeline.xml",
-		"pipeline-script": "$scriptdir/templates/pipeline",
-		"node": "ubuntu-devel"
-	}]
+	"credentials": [
+		{
+			"id": "ssh-flederwiesel",
+			"username": "flederwiesel",
+			"password": null,
+			"keyfile": "/home/flederwiesel/.ssh/flederwiesel"
+		},
+		{
+			"id": "ssh-jenkins",
+			"username": "jenkins",
+			"password": null,
+			"keyfile": "/home/jenkins/.ssh/jenkins"
+		}
+	],
+	"nodes": [
+		{
+			"hostname": "ubuntu-devel",
+			"host-mac": "ssh-ed25519",
+			"host-key": "AAAAC3NzaC1lZDI1NTE5AAAAIFkhw+Wq5tOJhQNE6dqwK+8/N6AHjhd5e8dZm3FxLBQ4",
+			"credentials": "ssh-flederwiesel",
+			"root": "/home/flederwiesel"
+		},
+		{
+			"hostname": "ubuntu-devel.flederwiesel.net",
+			"host-mac": "ecdsa-sha2-nistp256",
+			"host-key": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGDexTB/NNS/ADebsYGDHsAcbOFCwlX8GkoDv0fKrUXVJUchj1PZ3h0um8Nf9a8LUcNo2sxvhRxSPe3T9BLUJkw=",
+			"credentials": "ssh-jenkins",
+			"root": "/home/jenkins"
+		}
+	],
+	"jobs": [
+		{
+			"name": "yocto-docker-pipeline",
+			"project-url": "https://github.com/flederwiesel/yocto-docker.git/",
+			"xml-template": "$scriptdir/templates/pipeline.xml",
+			"pipeline-script": "$scriptdir/templates/pipeline",
+			"node": "ubuntu-devel"
+		},
+		{
+			"name": "yocto-docker-pipeline-simple",
+			"project-url": "https://github.com/flederwiesel/yocto-docker.git/",
+			"xml-template": "$scriptdir/templates/pipeline.xml",
+			"pipeline-script": "$scriptdir/templates/pipeline",
+			"node": "ubuntu-devel.flederwiesel.net"
+		}
+	]
 }
