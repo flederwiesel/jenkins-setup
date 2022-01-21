@@ -98,33 +98,12 @@ systemctl enable jenkins
 systemctl start  jenkins
 systemctl status jenkins --no-pager
 
-state=undefined
+# Wait for Jenkins being up and running
 
-# Initial Jenkins setup
-
-mkdir -p "$HOMEDIR/.jenkins-setup"
-chgrp jenkins "$HOMEDIR/.jenkins-setup"
-chmod og=rwx,g+s,o= "$HOMEDIR/.jenkins-setup"
-
-# Create files with rwx permissions for owner and group,
-# so all users in the jenkins group have access
-
-# BE CAREFUL NOT TO CREATE FILES OUTSIDE "$HOMEDIR/.jenkins-setup"
-# as they all will have permissions we set here, which may not be
-# what you want...
-
-umask 007
-
-rm -f "$HOMEDIR/jenkins-auth"
-
-while [[ ! -e "$HOMEDIR/jenkins-auth" ]]
+while [[ -z "$auth" ]]
 do
 	passwd=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null) &&
-	{
-		auth="admin:$passwd"
-		echo "$auth" > "$HOMEDIR/jenkins-auth"
-		chgrp jenkins "$HOMEDIR/jenkins-auth"
-	} ||
+	auth="admin:$passwd" ||
 	sleep 1
 done
 
@@ -140,6 +119,12 @@ do
 	[ "${result:0:1}" = "2" ] || sleep 1
 done
 
+mkdir -p "$HOMEDIR/.jenkins-setup"
+chgrp jenkins "$HOMEDIR/.jenkins-setup"
+chmod og=rwx,g+s,o= "$HOMEDIR/.jenkins-setup"
+
+# Get CLI
+
 [ -e /usr/share/java/jenkins-cli.jar ] ||
 wget -P /usr/share/java http://localhost:8080/jnlpJars/jenkins-cli.jar
 
@@ -147,8 +132,21 @@ jenkins-cli()
 {
 	java -jar /usr/share/java/jenkins-cli.jar \
 		-s http://localhost:8080/ -auth \
-		@$HOMEDIR/jenkins-auth "$@"
+		@$HOMEDIR/.jenkins-setup/auth "$@"
 }
+
+# Initial Jenkins setup
+
+# Create files with rwx permissions for owner and group,
+# so all users in the jenkins group have access
+
+# BE CAREFUL NOT TO CREATE FILES OUTSIDE "$HOMEDIR/.jenkins-setup"
+# as they all will have permissions we set here, which may not be
+# what you want...
+
+umask 007
+
+echo "$auth" > "$HOMEDIR/.jenkins-setup/auth"
 
 if [[ $1 ]]; then
 	if [[ -f "$1" ]]; then
