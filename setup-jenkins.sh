@@ -257,7 +257,7 @@ do
 	xmlstarlet ed \
 		-u "/list/$xmldomain/credentials/$xmlpkey/id" -v "${cred[id]}" \
 		-u "/list/$xmldomain/credentials/$xmlpkey/username" -v "${cred[username]}" \
-		-u "/list/$xmldomain/credentials/$xmlpkey/passphrase" -v "${cred[passphrase]}" \
+		-u "/list/$xmldomain/credentials/$xmlpkey/passphrase" -v "${cred[keyfile-password]}" \
 		-u "/list/$xmldomain/credentials/$xmlpkey/privateKeySource/privateKey" -v "$(cat ${cred[keyfile]})" \
 		"$scriptdir/templates/credentials.xml" \
 		> "$HOMEDIR/.jenkins-setup/credentials/${cred[id]}.xml"

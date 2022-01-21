@@ -5,14 +5,14 @@
 		{
 			"id": "ssh-flederwiesel",
 			"username": "flederwiesel",
-			"password": null,
-			"keyfile": "/home/flederwiesel/.ssh/flederwiesel"
+			"keyfile": "/home/flederwiesel/.ssh/flederwiesel",
+			"keyfile-password": null
 		},
 		{
 			"id": "ssh-jenkins",
 			"username": "jenkins",
-			"password": null,
-			"keyfile": "/home/jenkins/.ssh/jenkins"
+			"keyfile": "/home/jenkins/.ssh/jenkins",
+			"keyfile-password": null
 		}
 	],
 	"nodes": [
